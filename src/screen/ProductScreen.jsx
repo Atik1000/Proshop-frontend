@@ -1,24 +1,30 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Col, Row, ListGroup, ListGroupItem, Card, Button } from "reactstrap";
-import products from "../products";
 import Review from "../components/Rating";
-import axios from "axios";
+import Loader from '../components/Loader';
+import Message from '../components/Message';
+import {useSelector,useDispatch} from "react-redux"
+import {listProductDetails} from '../store/actions/productAction'
+
 const ProductScreen = ({ match }) => {
-  const [product, setProduct] = useState([]);
-  useEffect(() => {
-    async function fetchProduct() {
-      const { data } = await axios.get(`http://127.0.0.1:8000/api/products/${match.params.id}`);
-      setProduct(data)
-    }
-    fetchProduct()
-  }, []);
-  // const product = products.find((p) => p._id == match.params.id);
+  
+  const dispatch=useDispatch()
+  const productDetails=useSelector(state=>state.productDetails)
+  console.log(productDetails);
+  const {product,loading,error}=productDetails;
+ 
+  useEffect(()=>{
+    dispatch(listProductDetails(match.params.id))
+  },[dispatch,match])
+ 
   return (
     <div>
       <Link to="/" className="btn btn-light my-3 ">
         Go Back
       </Link>
+      {loading ? <Loader/>
+      :error?<Message varient='danger'>{error}</Message>:
 
       <Row>
         <Col md={6}>
@@ -31,7 +37,7 @@ const ProductScreen = ({ match }) => {
               <h3>{product.name}</h3>{" "}
             </ListGroupItem>
             <ListGroupItem>
-              <Review value={product.rating} text={`${product.numReviews} reviews` } color={'yellow'} />
+              <Review value={product.rating} text={product.numReviews}   color={'yellow'} />
             </ListGroupItem>
             <ListGroupItem>price:${product.price}</ListGroupItem>
             <ListGroupItem>{product.description}</ListGroupItem>
@@ -61,6 +67,7 @@ const ProductScreen = ({ match }) => {
             </Card>
         </Col>
       </Row>
+}
     </div>
   );
 };
